@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuickFlat — HPRA XML → flat JSON / CSV for Power BI &amp; QuickSight</title>
+  <meta name="description" content="Drag-and-drop converter that flattens the HPRA human-medicines XML list into Power BI / QuickSight-ready CSV, JSON and NDJSON. Runs entirely in your browser." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">⬡</span>
+        <div>
+          <h1>QuickFlat</h1>
+          <p class="tagline">HPRA medicines XML → flat <strong>CSV / JSON / NDJSON</strong> for Power BI &amp; QuickSight</p>
+        </div>
+      </div>
+      <a class="ghlink" href="https://github.com/snbyrnes/QuickFlat" rel="noopener">View on GitHub</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <p>
+        Drop the HPRA <em>human medicines</em> XML list below and QuickFlat turns it into a clean,
+        rectangular table you can load straight into Power BI or Amazon QuickSight. It recognises the
+        HPRA schema (and falls back to generic flattening for any other XML).
+        <strong>Everything runs in your browser — no file is ever uploaded.</strong>
+      </p>
+    </section>
+
+    <section id="dropzone" class="dropzone" tabindex="0" role="button"
+             aria-label="Drop an XML file here or press Enter to browse">
+      <input id="fileInput" type="file" accept=".xml,text/xml,application/xml" hidden />
+      <div class="dz-inner">
+        <div class="dz-icon" aria-hidden="true">⬇</div>
+        <p class="dz-title">Drag &amp; drop an XML file</p>
+        <p class="dz-sub">or
+          <button id="browseBtn" type="button" class="link">browse…</button>
+          ·
+          <button id="demoBtn" type="button" class="link">try the demo file</button>
+        </p>
+      </div>
+    </section>
+
+    <p id="error" class="error" hidden></p>
+
+    <div id="progress" class="progress" hidden>
+      <div class="bar"><div id="progressBar" class="bar-fill"></div></div>
+      <span id="progressLabel" class="progress-label"></span>
+    </div>
+
+    <p id="status" class="status" aria-live="polite"></p>
+
+    <section id="controls" class="controls" hidden>
+      <div class="control">
+        <label for="explode">Repeating fields</label>
+        <select id="explode"></select>
+        <span class="hint">Explode = one row per value (joins the other multi-value fields).</span>
+      </div>
+      <div class="control">
+        <label for="separator">Join separator</label>
+        <input id="separator" type="text" value=" | " spellcheck="false" />
+        <span class="hint">Used when multiple values share a cell.</span>
+      </div>
+      <div class="control control-checks">
+        <label class="check"><input id="isoDate" type="checkbox" checked /> Add ISO date column</label>
+        <label class="check"><input id="includeSource" type="checkbox" checked /> Add source columns</label>
+      </div>
+      <div class="downloads">
+        <button id="dlCsv" class="btn primary" disabled>Download CSV</button>
+        <button id="dlJson" class="btn" disabled>Download JSON</button>
+        <button id="dlNdjson" class="btn" disabled>Download NDJSON</button>
+      </div>
+    </section>
+
+    <section id="stats" class="stats" aria-live="polite"></section>
+
+    <section id="previewWrap" class="preview-wrap" hidden>
+      <div class="preview-head">
+        <h2>Preview</h2>
+        <span id="previewNote" class="preview-note"></span>
+      </div>
+      <div id="preview" class="preview"></div>
+    </section>
+
+    <section class="guide">
+      <h2>Loading the output</h2>
+      <div class="guide-cols">
+        <div>
+          <h3>Power BI</h3>
+          <ol>
+            <li><strong>CSV:</strong> Home → Get data → <em>Text/CSV</em>, pick the file, Load.</li>
+            <li><strong>JSON:</strong> Get data → <em>JSON</em> → <em>To Table</em> → expand columns.</li>
+            <li>Set <code>AuthorisedDateISO</code> as a Date column for time intelligence.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Amazon QuickSight</h3>
+          <ol>
+            <li><strong>CSV</strong> or <strong>NDJSON</strong> upload best — both are flat and rectangular.</li>
+            <li>New dataset → Upload a file (or S3) → confirm field types.</li>
+            <li>Use <em>Explode by Active Substance</em> for substance-level analysis.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p>QuickFlat is an independent utility and is <strong>not</strong> affiliated with, or validated by, the
+         Health Products Regulatory Authority (HPRA). XML data © HPRA.</p>
+      <p>Processed locally in your browser. Source on
+         <a href="https://github.com/snbyrnes/QuickFlat" rel="noopener">GitHub</a>.</p>
+    </div>
+  </footer>
+
+  <script src="js/transform.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

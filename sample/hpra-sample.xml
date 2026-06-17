@@ -1,0 +1,231 @@
+<Products xmlns="https://assets.hpra.ie/products//xml/Human" xsi:schemaLocation="https://assets.hpra.ie/products//xml/Human https://assets.hpra.ie/products//xml/Human.xsd" schemaVersion="1.0" datePublished="2026-06-17T02:30:22" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Product>
+    <DrugIDPK>PA0179/002/013</DrugIDPK>
+    <LicenceNumber>PA0179/002/013</LicenceNumber>
+    <ProductName>0.9 % w/v Sodium Chloride Injection BP</ProductName>
+    <PAHolder>B. Braun Medical Limited</PAHolder>
+    <AuthorisedDate>08/04/1987</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Marketed</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Solution for injection</DosageForm>
+    <ATCs>
+      <ATC>V07AB</ATC>
+    </ATCs>
+    <LegalBasis>Well-established use application (Article 10a of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Intramuscular use</RoutesOfAdministration>
+      <RoutesOfAdministration>Intravenous use</RoutesOfAdministration>
+      <RoutesOfAdministration>Subcutaneous use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Sodium chloride</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments xsi:nil="true" />
+  </Product>
+    <Product>
+    <DrugIDPK>PA1968/018/001</DrugIDPK>
+    <LicenceNumber>PA1968/018/001</LicenceNumber>
+    <ProductName>0.9% Sodium Chloride Intravenous Infusion Solution</ProductName>
+    <PAHolder>Laboratoire Aguettant</PAHolder>
+    <AuthorisedDate>31/05/1999</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Not marketed</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Solution for infusion</DosageForm>
+    <ATCs>
+      <ATC>B05BB</ATC>
+      <ATC>B05BB01</ATC>
+    </ATCs>
+    <LegalBasis>Not Currently Available</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Intravenous use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Sodium chloride</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments xsi:nil="true" />
+  </Product>
+    <Product>
+    <DrugIDPK>EU/1/04/276/033-035</DrugIDPK>
+    <LicenceNumber>EU/1/04/276/033-035</LicenceNumber>
+    <InterchangeableListCode>IC0092-047-019</InterchangeableListCode>
+    <ProductName>Abilify 1 mg/mL oral solution</ProductName>
+    <PAHolder>Otsuka Pharmaceutical Netherlands B.V.</PAHolder>
+    <AuthorisedDate xsi:nil="true" />
+    <ProductType>HM</ProductType>
+    <MarketInfo>Unknown</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Oral solution</DosageForm>
+    <ATCs>
+      <ATC>N05AX</ATC>
+      <ATC>N05AX12</ATC>
+    </ATCs>
+    <LegalBasis>New active substance (Article 8(3) of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Oral use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Aripiprazole</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments xsi:nil="true" />
+  </Product>
+    <Product>
+    <DrugIDPK>PA1186/001/001</DrugIDPK>
+    <LicenceNumber>PA1186/001/001</LicenceNumber>
+    <ProductName>Abidec Multivitamin Oral Drops Solution</ProductName>
+    <PAHolder>Chefaro Ireland DAC</PAHolder>
+    <AuthorisedDate>01/09/2000</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Marketed</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Oral drops, solution</DosageForm>
+    <ATCs>
+      <ATC>A11BA</ATC>
+    </ATCs>
+    <LegalBasis>Generic application (Article 10(1) of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Oral use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Ergocalciferol</ActiveSubstance>
+      <ActiveSubstance>Thiamine hydrochloride</ActiveSubstance>
+      <ActiveSubstance>Riboflavin sodium phosphate</ActiveSubstance>
+      <ActiveSubstance>Pyridoxine hydrochloride </ActiveSubstance>
+      <ActiveSubstance>Nicotinamide</ActiveSubstance>
+      <ActiveSubstance>Ascorbic acid</ActiveSubstance>
+      <ActiveSubstance>Vitamin a palmitate</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product not subject to medical prescription</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to the general public</PromotionLegalStatus>
+    <SupplyComments xsi:nil="true" />
+  </Product>
+    <Product>
+    <DrugIDPK>TR2309/021/001</DrugIDPK>
+    <LicenceNumber>TR2309/021/001</LicenceNumber>
+    <ProductName>A.Vogel Uva-ursi &amp; Echinacea Cystitis oral drops</ProductName>
+    <PAHolder>A.Vogel Ireland Limited</PAHolder>
+    <AuthorisedDate>26/06/2020</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Marketed</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Oral drops, solution</DosageForm>
+    <ATCs xsi:nil="true" />
+    <LegalBasis>Traditional use registration for herbal medicinal product application (Article 16a of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Oral use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances xsi:nil="true" />
+    <DispensingLegalStatus>
+      <Status>Product not subject to medical prescription</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to the general public</PromotionLegalStatus>
+    <SupplyComments xsi:nil="true" />
+  </Product>
+    <Product>
+    <DrugIDPK>EU/1/07/412/021-22</DrugIDPK>
+    <LicenceNumber>EU/1/07/412/021-22</LicenceNumber>
+    <ProductName>Abseamed 20 000 IU/0.5 mL solution for injection in a pre-filled syringe</ProductName>
+    <PAHolder>Medice Arzneimittel Putter GmbH &amp; Co. K.G</PAHolder>
+    <AuthorisedDate xsi:nil="true" />
+    <ProductType>HM</ProductType>
+    <MarketInfo>Unknown</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Solution for injection in pre-filled syringe</DosageForm>
+    <ATCs>
+      <ATC>B03XA</ATC>
+      <ATC>B03XA01</ATC>
+    </ATCs>
+    <LegalBasis>Well-established use application (Article 10a of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Intravenous use</RoutesOfAdministration>
+      <RoutesOfAdministration>Subcutaneous use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Epoetin alfa</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments>Medicinal product subject to restricted medical prescription (See Annex I: Summary of Product Characteristics, section 4.2)</SupplyComments>
+  </Product>
+    <Product>
+    <DrugIDPK>EU/1/07/412/5-6</DrugIDPK>
+    <LicenceNumber>EU/1/07/412/5-6</LicenceNumber>
+    <ProductName>Abseamed 3 000 IU/0.3 mL solution for injection in a pre-filled syringe</ProductName>
+    <PAHolder>Medice Arzneimittel Putter GmbH &amp; Co. K.G</PAHolder>
+    <AuthorisedDate>28/08/2007</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Unknown</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Solution for injection in pre-filled syringe</DosageForm>
+    <ATCs>
+      <ATC>B03XA</ATC>
+      <ATC>B03XA01</ATC>
+    </ATCs>
+    <LegalBasis>Well-established use application (Article 10a of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Intravenous use</RoutesOfAdministration>
+      <RoutesOfAdministration>Subcutaneous use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Recombinant human erythropoietin alfa</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments>Medicinal product subject to restricted medical prescription (See Annex I: Summary of Product Characteristics, section 4.2).</SupplyComments>
+  </Product>
+    <Product>
+    <DrugIDPK>EU/1/07/412/023-24</DrugIDPK>
+    <LicenceNumber>EU/1/07/412/023-24</LicenceNumber>
+    <ProductName>Abseamed 30 000 IU/0.75 mL solution for injection in a pre-filled syringe</ProductName>
+    <PAHolder>Medice Arzneimittel Putter GmbH &amp; Co. K.G</PAHolder>
+    <AuthorisedDate>26/11/2009</AuthorisedDate>
+    <ProductType>HM</ProductType>
+    <MarketInfo>Unknown</MarketInfo>
+    <RegistrationStatus>AU</RegistrationStatus>
+    <DosageForm>Solution for injection in pre-filled syringe</DosageForm>
+    <ATCs>
+      <ATC>B03XA</ATC>
+      <ATC>B03XA01</ATC>
+    </ATCs>
+    <LegalBasis>Well-established use application (Article 10a of Directive No 2001/83/EC)</LegalBasis>
+    <RoutesOfAdministration>
+      <RoutesOfAdministration>Intravenous use</RoutesOfAdministration>
+      <RoutesOfAdministration>Subcutaneous use</RoutesOfAdministration>
+    </RoutesOfAdministration>
+    <ActiveSubstances>
+      <ActiveSubstance>Epoetin alfa</ActiveSubstance>
+    </ActiveSubstances>
+    <DispensingLegalStatus>
+      <Status>Product subject to prescription which may not be renewed (A)</Status>
+    </DispensingLegalStatus>
+    <SupplyLegalStatus>Supply through pharmacies only</SupplyLegalStatus>
+    <PromotionLegalStatus>Advertising to healthcare professionals only</PromotionLegalStatus>
+    <SupplyComments>Medicinal product subject to restricted medical prescription (See Annex I: Summary of Product Characteristics, section 4.2).</SupplyComments>
+  </Product>
+</Products>

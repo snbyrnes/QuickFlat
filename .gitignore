@@ -1,0 +1,11 @@
+# Full HPRA export used for local testing (too large + regenerated daily).
+sample_latestHMlist.xml
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# Node (only used for the optional test harness)
+node_modules/
