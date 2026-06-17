@@ -23,13 +23,17 @@
     'LegalBasis', 'SupplyLegalStatus', 'PromotionLegalStatus', 'SupplyComments'
   ];
 
-  // Multi-value fields: { col = output column, container = wrapper tag, child = repeated tag }.
+  // Multi-value fields. col = output column, container = wrapper tag, child =
+  // repeated tag, table = bridge-table name used by the star-schema export.
   var HPRA_MULTI = [
-    { col: 'ATC', container: 'ATCs', child: 'ATC' },
-    { col: 'RoutesOfAdministration', container: 'RoutesOfAdministration', child: 'RoutesOfAdministration' },
-    { col: 'ActiveSubstance', container: 'ActiveSubstances', child: 'ActiveSubstance' },
-    { col: 'DispensingLegalStatus', container: 'DispensingLegalStatus', child: 'Status' }
+    { col: 'ATC', container: 'ATCs', child: 'ATC', table: 'product_atcs' },
+    { col: 'RoutesOfAdministration', container: 'RoutesOfAdministration', child: 'RoutesOfAdministration', table: 'product_routes' },
+    { col: 'ActiveSubstance', container: 'ActiveSubstances', child: 'ActiveSubstance', table: 'product_active_substances' },
+    { col: 'DispensingLegalStatus', container: 'DispensingLegalStatus', child: 'Status', table: 'product_dispensing_status' }
   ];
+
+  // Key column used by diff + star-schema joins.
+  var HPRA_KEY = 'DrugIDPK';
 
   var HPRA_KNOWN = (function () {
     var set = {};
@@ -243,6 +247,100 @@
     });
   }
 
+  // ---- Column configuration (select / reorder / rename) ----------------------
+
+  /**
+   * Project rows onto a user-defined column configuration.
+   * config: { order: [colName...], hidden: { col: true }, rename: { col: newName } }
+   * Unknown columns in `order` are ignored; columns missing from `order` are
+   * appended (nothing is silently dropped except explicitly hidden columns).
+   */
+  function applyColumnConfig(columns, rows, config) {
+    config = config || {};
+    var known = {};
+    columns.forEach(function (c) { known[c] = true; });
+
+    var seen = {};
+    var src = [];
+    (config.order || []).forEach(function (c) {
+      if (known[c] && !seen[c]) { seen[c] = true; src.push(c); }
+    });
+    columns.forEach(function (c) { if (!seen[c]) { seen[c] = true; src.push(c); } });
+
+    var hidden = config.hidden || {};
+    src = src.filter(function (c) { return !hidden[c]; });
+
+    var rename = config.rename || {};
+    var display = src.map(function (c) {
+      var n = rename[c];
+      return (n && String(n).trim()) ? String(n).trim() : c;
+    });
+
+    var outRows = rows.map(function (r) {
+      var o = {};
+      for (var i = 0; i < src.length; i++) o[display[i]] = r[src[i]];
+      return o;
+    });
+    return { columns: display, rows: outRows };
+  }
+
+  // ---- Star schema (normalized multi-table export) ---------------------------
+
+  /**
+   * Build a fact table (products) plus one bridge table per multi-value field,
+   * all joined on DrugIDPK. This is the recommended Power BI / QuickSight model
+   * and sidesteps the explode-vs-join trade-off entirely.
+   * Returns [{ name, columns, rows }]. HPRA only.
+   */
+  function buildStarSchema(records, meta, opts) {
+    opts = opts || {};
+    meta = meta || {};
+    var addISO = opts.addISODate !== false;
+    var includeSource = opts.includeSource !== false;
+
+    var pcols = [];
+    HPRA_SCALARS.forEach(function (s) {
+      pcols.push(s);
+      if (s === 'AuthorisedDate' && addISO) pcols.push('AuthorisedDateISO');
+    });
+    if (includeSource) pcols.push('SourceDatePublished', 'SourceSchemaVersion');
+
+    var products = [];
+    var bridges = HPRA_MULTI.map(function (m) {
+      return { spec: m, name: m.table, columns: [HPRA_KEY, m.col], rows: [] };
+    });
+
+    for (var i = 0; i < records.length; i++) {
+      var rec = records[i] || {};
+      var key = scalar(rec[HPRA_KEY]);
+      var p = {};
+      for (var s = 0; s < HPRA_SCALARS.length; s++) {
+        var col = HPRA_SCALARS[s];
+        p[col] = scalar(rec[col]);
+        if (col === 'AuthorisedDate' && addISO) p.AuthorisedDateISO = toISODate(p.AuthorisedDate);
+      }
+      if (includeSource) {
+        p.SourceDatePublished = meta.datePublished || null;
+        p.SourceSchemaVersion = meta.schemaVersion || null;
+      }
+      products.push(p);
+
+      for (var b = 0; b < bridges.length; b++) {
+        var vals = getMulti(rec, bridges[b].spec);
+        for (var v = 0; v < vals.length; v++) {
+          var row = {};
+          row[HPRA_KEY] = key;
+          row[bridges[b].spec.col] = vals[v];
+          bridges[b].rows.push(row);
+        }
+      }
+    }
+
+    var tables = [{ name: 'products', columns: pcols, rows: normalize(pcols, products) }];
+    bridges.forEach(function (b) { tables.push({ name: b.name, columns: b.columns, rows: b.rows }); });
+    return tables;
+  }
+
   // ---- Serialisers -----------------------------------------------------------
 
   function csvCell(v) {
@@ -275,8 +373,14 @@
 
   root.QFTransform = {
     DEFAULT_SEP: DEFAULT_SEP,
+    HPRA_SCALARS: HPRA_SCALARS,
     HPRA_MULTI: HPRA_MULTI,
+    HPRA_KEY: HPRA_KEY,
     buildRows: buildRows,
+    buildStarSchema: buildStarSchema,
+    applyColumnConfig: applyColumnConfig,
+    getMulti: getMulti,
+    scalar: scalar,
     toCSV: toCSV,
     toJSON: toJSON,
     toNDJSON: toNDJSON,

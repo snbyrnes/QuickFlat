@@ -1,12 +1,23 @@
 # QuickFlat
 
 **Drag-and-drop converter that flattens the HPRA human-medicines XML list into
-Power BI / Amazon QuickSight–ready CSV, JSON and NDJSON — entirely in your browser.**
+Power BI / Amazon QuickSight–ready CSV, JSON, NDJSON and XLSX — entirely in your
+browser. Plus a star-schema export, a data-quality report and change tracking.**
 
 QuickFlat is a single static page (hostable on GitHub Pages) that takes the
 [HPRA "human medicines" XML list](https://www.hpra.ie/find-a-medicine/for-human-use/xml-product-listings)
 and turns it into a clean, **rectangular** table that BI tools ingest without
 fuss. No install, no upload — the file never leaves your machine.
+
+It has three tabs:
+
+- **Convert** — flatten to CSV / JSON / NDJSON / XLSX, with column selection,
+  rename, reorder and saved/shareable profiles, plus a normalized star-schema
+  export for proper BI modeling.
+- **Quality report** — field completeness, duplicate keys, invalid dates,
+  unexpected elements and categorical distributions (downloadable).
+- **Compare versions** — diff two published lists to see products added,
+  removed and changed, field by field (downloadable changelog).
 
 > This is the web successor to the Python desktop tool
 > [PharmaForm](https://github.com/snbyrnes/PharmaForm). See
@@ -30,8 +41,22 @@ fuss. No install, no upload — the file never leaves your machine.
 - **ISO date column** (`AuthorisedDateISO`, `yyyy-mm-dd`) added alongside the
   HPRA `dd/mm/yyyy` value, because BI date parsing is locale-sensitive.
 - **`xsi:nil` → null**, XML entities decoded, whitespace trimmed.
-- **Three outputs:** CSV (UTF-8 BOM, RFC-4180), JSON array, and NDJSON.
+- **Five outputs:** CSV (UTF-8 BOM, RFC-4180), JSON array, NDJSON, **XLSX**
+  (typed date cells), and a **star-schema** export (a ZIP of related CSVs, or a
+  multi-sheet XLSX).
+- **Column control + profiles:** include/exclude, rename and reorder columns;
+  save a default or copy a shareable link that restores your setup.
+- **Data-quality report** and **change tracking** between two published lists.
 - **Fast:** the full ~13 MB / 10,000-product list parses in well under a second.
+
+### Star schema (recommended for Power BI)
+
+Instead of one denormalized table, export a `products` fact table plus a bridge
+table per multi-value field (`product_atcs`, `product_active_substances`,
+`product_routes`, `product_dispensing_status`), all joined on `DrugIDPK`. Relate
+them in Power BI and you can slice by **every** repeating field at once with no
+row blow-up — the standard star-schema model, and a cleaner alternative to the
+explode-vs-join trade-off.
 
 ## Why it's better than PharmaForm
 
@@ -39,10 +64,13 @@ fuss. No install, no upload — the file never leaves your machine.
 |---|---|---|
 | Install | Windows .exe / Python | None — open a URL |
 | Where it runs | Desktop | Browser (data stays local) |
-| Multi-value fields | `ATC[0]`, `ATC[1]`… → **ragged** columns | Explode to rows **or** join — **stable** columns |
+| Multi-value fields | `ATC[0]`, `ATC[1]`… → **ragged** columns | Explode to rows, join, **or star schema** — stable columns |
 | Dates | `dd/mm/yyyy` only | Adds ISO `yyyy-mm-dd` |
-| Output | JSON | CSV + JSON + NDJSON |
+| Output | JSON | CSV + JSON + NDJSON + XLSX + star-schema ZIP/XLSX |
 | QuickSight | Not targeted | NDJSON/CSV first-class |
+| Quality report | Text/Excel report | In-browser report + JSON/CSV export |
+| Change tracking | — | Diff two published lists |
+| Column control | — | Select / rename / reorder + shareable profiles |
 | Preview | — | Live in-page table + stats |
 
 The ragged `ATC[n]` approach means products with three ATC codes create columns
@@ -108,6 +136,17 @@ full export if you drop `sample_latestHMlist.xml` in the repo root):
 node test/run.cjs
 ```
 
+An optional headless end-to-end test drives the real UI in Chromium (loads the
+demo, toggles columns, exercises every download, and the Quality and Compare
+tabs):
+
+```bash
+npm install                 # installs Playwright (dev-only)
+npx playwright install chromium
+python -m http.server 8731  # in another shell
+node test/ui.cjs
+```
+
 ## Deployment (GitHub Pages)
 
 Two options:
@@ -122,24 +161,37 @@ Two options:
 ## Project structure
 
 ```
-index.html            # page + drop zone + controls + preview
+index.html            # page: tabs, drop zones, controls, preview
 css/styles.css        # styling
 js/xml-sax.js         # streaming SAX XML parser (worker)
 js/extract.js         # SAX events -> normalized record tree (worker)
-js/transform.js       # HPRA model, explode/join, CSV/JSON/NDJSON (main thread)
+js/transform.js       # HPRA model, explode/join, column config, star schema, CSV/JSON/NDJSON
+js/report.js          # data-quality & validation report
+js/diff.js            # change tracking between two lists
+js/zip.js             # minimal ZIP writer (store) for star-schema bundles
+js/xlsx.js            # minimal XLSX writer (typed dates, multi-sheet)
 js/worker.js          # Web Worker glue
-js/app.js             # UI controller (drag/drop, preview, downloads)
+js/app.js             # UI controller (tabs, drag/drop, preview, downloads)
 sample/hpra-sample.xml# small demo file
-test/run.cjs          # Node test harness
+test/run.cjs          # Node logic test harness
+test/ui.cjs           # Playwright headless UI test
 .github/workflows/    # Pages deploy
 ```
 
 ## Notes & limitations
 
 - Leaf-element attributes (other than `xsi:nil`) are not emitted as columns.
-- Generic (non-HPRA) mode joins/indexes arrays but does not offer explode.
+- Generic (non-HPRA) mode joins/indexes arrays but does not offer explode or the
+  star-schema export.
+- The curated column model targets the **human medicines** list. The animal /
+  interchangeable / withdrawn HPRA lists still load and flatten via the generic
+  fallback; dedicated models for them are a planned addition.
+- The HPRA human-medicines XML contains no SPC/PIL document URLs, so none are
+  emitted (verified across the full export).
 - CSV uses standard RFC-4180 quoting. If you open it in Excel and worry about
   formula injection, import via *Data → From Text/CSV* rather than double-click.
+- XLSX and ZIP are written by small built-in encoders (no dependencies); only
+  pure `yyyy-mm-dd` values are typed as Excel dates.
 
 ## Disclaimer
 

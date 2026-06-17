@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuickFlat — HPRA XML → flat JSON / CSV for Power BI &amp; QuickSight</title>
-  <meta name="description" content="Drag-and-drop converter that flattens the HPRA human-medicines XML list into Power BI / QuickSight-ready CSV, JSON and NDJSON. Runs entirely in your browser." />
+  <title>QuickFlat — HPRA XML → flat JSON / CSV / XLSX for Power BI &amp; QuickSight</title>
+  <meta name="description" content="Drag-and-drop converter that flattens the HPRA human-medicines XML list into Power BI / QuickSight-ready CSV, JSON, NDJSON and XLSX, with a star-schema export, data-quality report and change tracking. Runs entirely in your browser." />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -14,7 +14,7 @@
         <span class="logo" aria-hidden="true">⬡</span>
         <div>
           <h1>QuickFlat</h1>
-          <p class="tagline">HPRA medicines XML → flat <strong>CSV / JSON / NDJSON</strong> for Power BI &amp; QuickSight</p>
+          <p class="tagline">HPRA medicines XML → flat <strong>CSV / JSON / NDJSON / XLSX</strong> for Power BI &amp; QuickSight</p>
         </div>
       </div>
       <a class="ghlink" href="https://github.com/snbyrnes/QuickFlat" rel="noopener">View on GitHub</a>
@@ -24,66 +24,130 @@
   <main class="wrap">
     <section class="intro">
       <p>
-        Drop the HPRA <em>human medicines</em> XML list below and QuickFlat turns it into a clean,
-        rectangular table you can load straight into Power BI or Amazon QuickSight. It recognises the
-        HPRA schema (and falls back to generic flattening for any other XML).
-        <strong>Everything runs in your browser — no file is ever uploaded.</strong>
+        Drop the HPRA <em>human medicines</em> XML list and QuickFlat turns it into clean, BI-ready tables —
+        with a <strong>data-quality report</strong>, <strong>star-schema</strong> export and
+        <strong>change tracking</strong> between two published versions.
+        <strong>Everything runs in your browser; no file is ever uploaded.</strong>
       </p>
     </section>
 
-    <section id="dropzone" class="dropzone" tabindex="0" role="button"
-             aria-label="Drop an XML file here or press Enter to browse">
-      <input id="fileInput" type="file" accept=".xml,text/xml,application/xml" hidden />
-      <div class="dz-inner">
-        <div class="dz-icon" aria-hidden="true">⬇</div>
-        <p class="dz-title">Drag &amp; drop an XML file</p>
-        <p class="dz-sub">or
-          <button id="browseBtn" type="button" class="link">browse…</button>
-          ·
-          <button id="demoBtn" type="button" class="link">try the demo file</button>
-        </p>
-      </div>
-    </section>
-
+    <!-- Shared messages -->
     <p id="error" class="error" hidden></p>
-
     <div id="progress" class="progress" hidden>
       <div class="bar"><div id="progressBar" class="bar-fill"></div></div>
       <span id="progressLabel" class="progress-label"></span>
     </div>
 
-    <p id="status" class="status" aria-live="polite"></p>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="convert" role="tab">Convert</button>
+      <button class="tab-btn" data-tab="quality" role="tab">Quality report</button>
+      <button class="tab-btn" data-tab="compare" role="tab">Compare versions</button>
+    </nav>
 
-    <section id="controls" class="controls" hidden>
-      <div class="control">
-        <label for="explode">Repeating fields</label>
-        <select id="explode"></select>
-        <span class="hint">Explode = one row per value (joins the other multi-value fields).</span>
+    <!-- ================= CONVERT ================= -->
+    <section id="tab-convert" class="tab-panel" role="tabpanel">
+      <div id="dropzone" class="dropzone" tabindex="0" role="button"
+           aria-label="Drop an XML file here or press Enter to browse">
+        <input id="fileInput" type="file" accept=".xml,text/xml,application/xml" hidden />
+        <div class="dz-inner">
+          <div class="dz-icon" aria-hidden="true">⬇</div>
+          <p class="dz-title">Drag &amp; drop an XML file</p>
+          <p class="dz-sub">or
+            <button id="browseBtn" type="button" class="link">browse…</button>
+            ·
+            <button id="demoBtn" type="button" class="link">try the demo file</button>
+          </p>
+        </div>
       </div>
-      <div class="control">
-        <label for="separator">Join separator</label>
-        <input id="separator" type="text" value=" | " spellcheck="false" />
-        <span class="hint">Used when multiple values share a cell.</span>
-      </div>
-      <div class="control control-checks">
-        <label class="check"><input id="isoDate" type="checkbox" checked /> Add ISO date column</label>
-        <label class="check"><input id="includeSource" type="checkbox" checked /> Add source columns</label>
-      </div>
-      <div class="downloads">
-        <button id="dlCsv" class="btn primary" disabled>Download CSV</button>
-        <button id="dlJson" class="btn" disabled>Download JSON</button>
-        <button id="dlNdjson" class="btn" disabled>Download NDJSON</button>
-      </div>
+
+      <p id="status" class="status" aria-live="polite"></p>
+
+      <section id="controls" class="controls" hidden>
+        <div class="control">
+          <label for="explode">Repeating fields</label>
+          <select id="explode"></select>
+          <span class="hint">Explode = one row per value (joins the other multi-value fields).</span>
+        </div>
+        <div class="control">
+          <label for="separator">Join separator</label>
+          <input id="separator" type="text" value=" | " spellcheck="false" />
+          <span class="hint">Used when multiple values share a cell.</span>
+        </div>
+        <div class="control control-checks">
+          <label class="check"><input id="isoDate" type="checkbox" checked /> Add ISO date column</label>
+          <label class="check"><input id="includeSource" type="checkbox" checked /> Add source columns</label>
+        </div>
+
+        <details id="colPanelWrap" class="col-panel">
+          <summary>Columns — choose, rename &amp; reorder <span id="colCount" class="muted-pill"></span></summary>
+          <div class="profile-actions">
+            <button id="copyLink" type="button" class="btn small">Copy shareable link</button>
+            <button id="saveProfile" type="button" class="btn small">Save as my default</button>
+            <button id="resetProfile" type="button" class="btn small">Reset</button>
+            <span id="profileMsg" class="profile-msg"></span>
+          </div>
+          <div id="colList" class="col-list"></div>
+        </details>
+
+        <div class="downloads">
+          <button id="dlCsv" class="btn primary" disabled>CSV</button>
+          <button id="dlJson" class="btn" disabled>JSON</button>
+          <button id="dlNdjson" class="btn" disabled>NDJSON</button>
+          <button id="dlXlsx" class="btn" disabled>XLSX</button>
+          <span class="dl-sep"></span>
+          <button id="dlStarZip" class="btn" disabled title="Fact + dimension tables for a Power BI star schema">Star schema (ZIP)</button>
+          <button id="dlStarXlsx" class="btn" disabled title="One workbook, one sheet per table">Star schema (XLSX)</button>
+        </div>
+      </section>
+
+      <section id="stats" class="stats" aria-live="polite"></section>
+
+      <section id="previewWrap" class="preview-wrap" hidden>
+        <div class="preview-head">
+          <h2>Preview</h2>
+          <span id="previewNote" class="preview-note"></span>
+        </div>
+        <div id="preview" class="preview"></div>
+      </section>
     </section>
 
-    <section id="stats" class="stats" aria-live="polite"></section>
-
-    <section id="previewWrap" class="preview-wrap" hidden>
-      <div class="preview-head">
-        <h2>Preview</h2>
-        <span id="previewNote" class="preview-note"></span>
+    <!-- ================= QUALITY ================= -->
+    <section id="tab-quality" class="tab-panel" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>Data quality &amp; validation</h2>
+        <div class="panel-actions">
+          <button id="dlReportJson" class="btn small" disabled>Report JSON</button>
+          <button id="dlReportCsv" class="btn small" disabled>Field completeness CSV</button>
+        </div>
       </div>
-      <div id="preview" class="preview"></div>
+      <p id="qualityEmpty" class="muted">Load a file in the <strong>Convert</strong> tab to see its quality report.</p>
+      <div id="qualityBody" hidden></div>
+    </section>
+
+    <!-- ================= COMPARE ================= -->
+    <section id="tab-compare" class="tab-panel" role="tabpanel" hidden>
+      <div class="panel-head">
+        <h2>Compare two published versions</h2>
+        <div class="panel-actions">
+          <button id="dlDiffCsv" class="btn small" disabled>Changelog CSV</button>
+          <button id="dlDiffJson" class="btn small" disabled>Diff JSON</button>
+        </div>
+      </div>
+      <p class="muted">Drop an older and a newer HPRA list to see products added, removed and changed (matched on <code>DrugIDPK</code>).</p>
+      <div class="cmp-grid">
+        <div id="cmpDropA" class="dropzone mini" tabindex="0" role="button" aria-label="Drop the baseline (older) XML">
+          <input id="cmpFileA" type="file" accept=".xml,text/xml,application/xml" hidden />
+          <p class="dz-title">Baseline (older)</p>
+          <p id="cmpStatusA" class="dz-sub">drag &amp; drop or <button class="link" data-browse="cmpFileA" type="button">browse…</button></p>
+        </div>
+        <div id="cmpDropB" class="dropzone mini" tabindex="0" role="button" aria-label="Drop the updated (newer) XML">
+          <input id="cmpFileB" type="file" accept=".xml,text/xml,application/xml" hidden />
+          <p class="dz-title">Updated (newer)</p>
+          <p id="cmpStatusB" class="dz-sub">drag &amp; drop or <button class="link" data-browse="cmpFileB" type="button">browse…</button></p>
+        </div>
+      </div>
+      <section id="diffStats" class="stats"></section>
+      <div id="diffBody"></div>
     </section>
 
     <section class="guide">
@@ -92,9 +156,9 @@
         <div>
           <h3>Power BI</h3>
           <ol>
-            <li><strong>CSV:</strong> Home → Get data → <em>Text/CSV</em>, pick the file, Load.</li>
-            <li><strong>JSON:</strong> Get data → <em>JSON</em> → <em>To Table</em> → expand columns.</li>
-            <li>Set <code>AuthorisedDateISO</code> as a Date column for time intelligence.</li>
+            <li><strong>CSV / XLSX:</strong> Home → Get data → pick the file → Load.</li>
+            <li><strong>Star schema (ZIP):</strong> load each CSV, then relate them on <code>DrugIDPK</code> — slice by every field with no row blow-up.</li>
+            <li>Mark <code>AuthorisedDateISO</code> as a Date column for time intelligence.</li>
           </ol>
         </div>
         <div>
@@ -119,6 +183,10 @@
   </footer>
 
   <script src="js/transform.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/diff.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/xlsx.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

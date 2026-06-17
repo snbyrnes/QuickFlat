@@ -9,3 +9,6 @@ Thumbs.db
 
 # Node (only used for the optional test harness)
 node_modules/
+
+# Binary outputs written by the test harness for external validation
+test/out/

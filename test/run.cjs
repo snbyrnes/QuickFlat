@@ -16,11 +16,13 @@ sandbox.self = sandbox;
 sandbox.globalThis = sandbox;
 sandbox.console = console;
 sandbox.performance = { now: () => Date.now() };
+sandbox.TextEncoder = TextEncoder; // Web API used by zip.js, not a JS intrinsic
+sandbox.Date = Date;
 vm.createContext(sandbox);
-['js/xml-sax.js', 'js/extract.js', 'js/transform.js'].forEach((f) => {
+['js/xml-sax.js', 'js/extract.js', 'js/transform.js', 'js/report.js', 'js/diff.js', 'js/zip.js', 'js/xlsx.js'].forEach((f) => {
   vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), sandbox, { filename: f });
 });
-const { QFExtract, QFTransform } = sandbox;
+const { QFExtract, QFTransform, QFReport, QFDiff, QFZip, QFXlsx } = sandbox;
 
 let pass = 0, fail = 0;
 function check(name, cond, detail) {
@@ -92,6 +94,83 @@ check('generic: not HPRA', gen.isHPRA === false);
 check('generic: record tag detected', gen.recordTag === 'Item', gen.recordTag);
 const genRows = QFTransform.buildRows(gen.records, gen.meta, { isHPRA: false, separator: ' | ' });
 check('generic: dotted path + joined array', genRows.rows[0]['Tags.Tag'] === 'x | y', JSON.stringify(genRows.rows[0]));
+
+// ---- #4 Column config -----------------------------------------------------
+section('column config (select / reorder / rename)');
+const cfgIn = QFTransform.buildRows(demo.records, demo.meta, { explode: 'none', isHPRA: true });
+const cfg = QFTransform.applyColumnConfig(cfgIn.columns, cfgIn.rows, {
+  order: ['ProductName', 'DrugIDPK'],
+  hidden: { SourceSchemaVersion: true, SourceDatePublished: true },
+  rename: { ProductName: 'Product', DrugIDPK: 'ID' }
+});
+check('reorder puts Product/ID first', cfg.columns[0] === 'Product' && cfg.columns[1] === 'ID', cfg.columns.slice(0, 3).join(','));
+check('hidden columns removed', cfg.columns.indexOf('SourceSchemaVersion') === -1 && cfg.columns.indexOf('SourceDatePublished') === -1);
+check('rename applied to keys', cfg.rows[0].Product !== undefined && cfg.rows[0].ID !== undefined);
+check('non-listed columns retained', cfg.columns.indexOf('PAHolder') !== -1);
+
+// ---- #3 Star schema -------------------------------------------------------
+section('star schema');
+const star = QFTransform.buildStarSchema(demo.records, demo.meta, { isHPRA: true });
+const tableNames = star.map((t) => t.name);
+check('emits products + 4 bridge tables', star.length === 5 && tableNames[0] === 'products', tableNames.join(','));
+const subsTable = star.find((t) => t.name === 'product_active_substances');
+check('bridge has DrugIDPK + value columns', subsTable.columns.join(',') === 'DrugIDPK,ActiveSubstance');
+const abidecSubs = subsTable.rows.filter((r) => r.DrugIDPK === 'PA1186/001/001');
+check('Abidec has 7 substance rows in bridge', abidecSubs.length === 7, 'rows=' + abidecSubs.length);
+const productsTable = star.find((t) => t.name === 'products');
+check('products has one row per product, no multi-value cols', productsTable.rows.length === demo.records.length &&
+  productsTable.columns.indexOf('ActiveSubstance') === -1);
+
+// ---- #1 Diff --------------------------------------------------------------
+section('change tracking (diff)');
+const oldRows = QFTransform.buildRows(demo.records, demo.meta, { explode: 'none', isHPRA: true }).rows;
+// Synthesize a "new" version: drop one product, add one, change one field.
+const newRecords = demo.records.slice(1).map((r) => Object.assign({}, r));
+newRecords.push({ DrugIDPK: 'NEW/001', LicenceNumber: 'NEW/001', ProductName: 'Brand New Product', PAHolder: 'X' });
+const changedIdx = newRecords.findIndex((r) => r.DrugIDPK === 'PA1186/001/001');
+newRecords[changedIdx] = Object.assign({}, newRecords[changedIdx], { MarketInfo: 'Withdrawn' });
+const newRows = QFTransform.buildRows(newRecords, demo.meta, { explode: 'none', isHPRA: true }).rows;
+const diff = QFDiff.buildDiff(oldRows, newRows, { key: 'DrugIDPK' });
+check('diff: 1 added', diff.summary.added === 1, JSON.stringify(diff.summary));
+check('diff: 1 removed', diff.summary.removed === 1, JSON.stringify(diff.summary));
+check('diff: 1 changed (MarketInfo)', diff.summary.changed === 1 &&
+  diff.changed[0].changes.some((c) => c.field === 'MarketInfo' && c.new === 'Withdrawn'), JSON.stringify(diff.changed[0] && diff.changed[0].changes));
+check('diff: source columns ignored (no false changes)', diff.changed.every((c) => c.changes.every((ch) => ch.field.indexOf('Source') === -1)));
+const dcsv = QFDiff.diffToCSV(diff).replace(/^﻿/, '').trim().split('\r\n');
+check('diff CSV has header + change rows', dcsv.length >= 4 && dcsv[0].startsWith('change,DrugIDPK'));
+
+// ---- #2 Quality report ----------------------------------------------------
+section('quality report');
+const rep = QFReport.buildReport(demo.records, demo.meta, demo.recordTag, demo.isHPRA);
+check('report: schema + record count', rep.schema === 'HPRA human medicines' && rep.recordCount === 8);
+const fDrug = rep.fields.find((f) => f.name === 'DrugIDPK');
+check('report: DrugIDPK 100% complete', fDrug.completeness === 1, JSON.stringify(fDrug));
+const fInter = rep.fields.find((f) => f.name === 'InterchangeableListCode');
+check('report: optional field partially complete', fInter.completeness > 0 && fInter.completeness < 1, JSON.stringify(fInter));
+const fSubs = rep.fields.find((f) => f.name === 'ActiveSubstance');
+check('report: multi field has totalValues', fSubs.type === 'multi' && fSubs.totalValues >= 8, JSON.stringify(fSubs));
+check('report: invalid dates detected as array', Array.isArray(rep.issues.invalidDates));
+check('report: distributions present', !!rep.distributions.MarketInfo && Object.keys(rep.distributions.MarketInfo).length > 0);
+const repCsv = QFReport.fieldsToCSV(rep).replace(/^﻿/, '').split('\r\n');
+check('report CSV header', repCsv[0] === 'field,type,present,missing,completeness_pct,distinct_values');
+JSON.parse(QFReport.reportToJSON(rep));
+check('report JSON valid', true);
+
+// ---- #3/#5 ZIP + XLSX bytes ------------------------------------------------
+section('zip + xlsx writers');
+const outDir = path.join(root, 'test', 'out');
+fs.mkdirSync(outDir, { recursive: true });
+const zipBytes = QFZip.makeZip(star.map((t) => ({ name: t.name + '.csv', data: QFTransform.toCSV(t.columns, t.rows) })));
+check('zip: starts with PK signature', zipBytes[0] === 0x50 && zipBytes[1] === 0x4B);
+check('zip: ends with EOCD signature', (function () {
+  const dv = new DataView(zipBytes.buffer, zipBytes.byteOffset + zipBytes.length - 22, 4);
+  return dv.getUint32(0, true) === 0x06054b50;
+})());
+fs.writeFileSync(path.join(outDir, 'star.zip'), Buffer.from(zipBytes));
+const xlsxBytes = QFXlsx.buildWorkbook(star.map((t) => ({ name: t.name, columns: t.columns, rows: t.rows })));
+check('xlsx: starts with PK signature', xlsxBytes[0] === 0x50 && xlsxBytes[1] === 0x4B);
+fs.writeFileSync(path.join(outDir, 'star.xlsx'), Buffer.from(xlsxBytes));
+console.log('  wrote test/out/star.zip (' + zipBytes.length + 'B) and test/out/star.xlsx (' + xlsxBytes.length + 'B) for external validation');
 
 // ---- Full file (optional) --------------------------------------------------
 const fullPath = path.join(root, 'sample_latestHMlist.xml');
