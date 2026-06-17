@@ -91,6 +91,16 @@ function check(name, cond, detail) {
   check('#1 identical files => 0 added/removed/changed', unchangedCard.added === '0' && unchangedCard.removed === '0' && unchangedCard.changed === '0', JSON.stringify(unchangedCard));
   check('#1 diff downloads enabled', !(await page.locator('#dlDiffCsv').isDisabled()));
 
+  // --- Changelog modal ---
+  await page.click('#changelogBtn');
+  await page.waitForSelector('#changelogModal:not([hidden]) .cl-entry', { timeout: 4000 });
+  const versions = await page.$$eval('#changelogModal .cl-ver', (s) => s.map((x) => x.textContent));
+  check('changelog: shows three releases', versions.join(',') === 'v1.2.0,v1.1.0,v1.0.0', versions.join(','));
+  check('changelog: includes initial + this release', (await page.textContent('#changelogModal')).includes('Initial release') && (await page.textContent('#changelogModal')).includes('changelog modal'));
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#changelogModal', { state: 'hidden', timeout: 3000 });
+  check('changelog: closes on Escape', true);
+
   check('no console/page errors during session', errors.length === 0, errors.slice(0, 5).join(' || '));
 
   await browser.close();

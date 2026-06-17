@@ -11,6 +11,37 @@
   var PREVIEW_ROWS = 200;
   var DIFF_ROWS = 300;
   var PROFILE_KEY = 'quickflat.profile.v1';
+  var SEEN_VERSION_KEY = 'quickflat.seenVersion';
+  var APP_VERSION = '1.2.0';
+
+  // Newest first. Shown in the "What's new" modal.
+  var CHANGELOG = [
+    {
+      version: '1.2.0', date: '2026-06-17', title: 'Changelog',
+      items: ['Added this “What’s new” changelog modal.']
+    },
+    {
+      version: '1.1.0', date: '2026-06-17', title: 'Reporting, modeling & comparison',
+      items: [
+        'Data-quality & validation report: field completeness, duplicate keys, invalid dates, unexpected elements and distributions.',
+        'Column control: select, rename and reorder columns, with a saved default and a copy-able shareable link.',
+        'Change tracking: diff two published lists for products added, removed and changed.',
+        'Star-schema export: a products fact table plus bridge tables, as a ZIP of CSVs or a multi-sheet XLSX.',
+        'XLSX export with typed date cells.',
+        'Reorganised into Convert / Quality / Compare tabs.'
+      ]
+    },
+    {
+      version: '1.0.0', date: '2026-06-17', title: 'Initial release',
+      items: [
+        'Browser-only, drag-and-drop HPRA human-medicines XML to flat output (nothing is uploaded).',
+        'Streaming SAX parser in a Web Worker — the full ~13 MB list parses in well under a second.',
+        'HPRA-aware column model with explode / join for repeating fields, ISO date column and xsi:nil handling.',
+        'CSV, JSON and NDJSON downloads, with a live preview and stats.',
+        'Generic fallback for any other record-list XML. Published to GitHub Pages.'
+      ]
+    }
+  ];
 
   var state = {
     primary: null,                 // { records, meta, isHPRA, recordTag, recordCount, sourceName }
@@ -32,7 +63,8 @@
     'stats', 'previewWrap', 'preview', 'previewNote',
     'qualityEmpty', 'qualityBody', 'dlReportJson', 'dlReportCsv',
     'cmpDropA', 'cmpFileA', 'cmpStatusA', 'cmpDropB', 'cmpFileB', 'cmpStatusB',
-    'diffStats', 'diffBody', 'dlDiffCsv', 'dlDiffJson']);
+    'diffStats', 'diffBody', 'dlDiffCsv', 'dlDiffJson',
+    'changelogBtn', 'changelogModal', 'changelogClose', 'changelogBody', 'appVersion']);
 
   // ---- Worker parse pipeline -------------------------------------------------
 
@@ -563,6 +595,61 @@
     else saveBlob(QFDiff.diffToJSON(diff), nm + '_diff.json', 'application/json');
   }
 
+  // ---- Changelog modal -------------------------------------------------------
+
+  var modalReturnFocus = null;
+
+  function renderChangelog() {
+    el.appVersion.textContent = 'v' + APP_VERSION;
+    el.changelogBody.innerHTML = '<ul class="cl-list">' + CHANGELOG.map(function (e) {
+      return '<li class="cl-entry">' +
+        '<div class="cl-meta"><span class="cl-ver">v' + esc(e.version) + '</span>' +
+        '<span class="cl-date">' + esc(e.date) + '</span></div>' +
+        '<h3 class="cl-title">' + esc(e.title) + '</h3>' +
+        '<ul class="cl-items">' + e.items.map(function (it) { return '<li>' + esc(it) + '</li>'; }).join('') +
+        '</ul></li>';
+    }).join('') + '</ul>';
+  }
+
+  function openChangelog() {
+    renderChangelog();
+    el.changelogModal.hidden = false;
+    document.body.classList.add('modal-open');
+    modalReturnFocus = document.activeElement;
+    el.changelogClose.focus();
+    document.addEventListener('keydown', onModalKey);
+    markVersionSeen();
+  }
+
+  function closeChangelog() {
+    el.changelogModal.hidden = true;
+    document.body.classList.remove('modal-open');
+    document.removeEventListener('keydown', onModalKey);
+    if (modalReturnFocus && modalReturnFocus.focus) modalReturnFocus.focus();
+  }
+
+  function onModalKey(e) {
+    if (e.key === 'Escape') { closeChangelog(); return; }
+    if (e.key !== 'Tab') return;
+    // Minimal focus trap.
+    var f = el.changelogModal.querySelectorAll('button, a[href]');
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  function markVersionSeen() {
+    try { localStorage.setItem(SEEN_VERSION_KEY, APP_VERSION); } catch (e) {}
+    el.changelogBtn.classList.remove('has-new');
+  }
+
+  function flagIfNewVersion() {
+    var seen = null;
+    try { seen = localStorage.getItem(SEEN_VERSION_KEY); } catch (e) {}
+    if (seen !== APP_VERSION) el.changelogBtn.classList.add('has-new');
+  }
+
   // ---- Tabs ------------------------------------------------------------------
 
   function switchTab(name) {
@@ -644,9 +731,15 @@
     b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
   });
 
+  el.changelogBtn.addEventListener('click', openChangelog);
+  el.changelogModal.addEventListener('click', function (e) {
+    if (e.target.hasAttribute('data-close')) closeChangelog();
+  });
+
   window.addEventListener('dragover', function (e) { e.preventDefault(); });
   window.addEventListener('drop', function (e) { e.preventDefault(); });
 
   // Load any saved/shared profile so it applies on first file load.
   pendingProfile = loadStoredProfile();
+  flagIfNewVersion();
 })();

@@ -17,7 +17,10 @@
           <p class="tagline">HPRA medicines XML → flat <strong>CSV / JSON / NDJSON / XLSX</strong> for Power BI &amp; QuickSight</p>
         </div>
       </div>
-      <a class="ghlink" href="https://github.com/snbyrnes/QuickFlat" rel="noopener">View on GitHub</a>
+      <div class="mast-actions">
+        <button id="changelogBtn" class="ghlink ghbtn" type="button">What's new</button>
+        <a class="ghlink" href="https://github.com/snbyrnes/QuickFlat" rel="noopener">View on GitHub</a>
+      </div>
     </div>
   </header>
 
@@ -181,6 +184,21 @@
          <a href="https://github.com/snbyrnes/QuickFlat" rel="noopener">GitHub</a>.</p>
     </div>
   </footer>
+
+  <div id="changelogModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="clTitle">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-box" role="document">
+      <div class="modal-head">
+        <h2 id="clTitle">What's new</h2>
+        <button id="changelogClose" class="modal-x" type="button" aria-label="Close" data-close>×</button>
+      </div>
+      <div id="changelogBody" class="modal-body"></div>
+      <div class="modal-foot">
+        <span class="muted small">QuickFlat <span id="appVersion"></span></span>
+        <a href="https://github.com/snbyrnes/QuickFlat/commits/main" rel="noopener" class="link">Full commit history →</a>
+      </div>
+    </div>
+  </div>
 
   <script src="js/transform.js"></script>
   <script src="js/report.js"></script>

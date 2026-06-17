@@ -219,6 +219,43 @@ main { padding-bottom: 60px; }
 .preview td.old { color: var(--danger); }
 .preview td.new { color: var(--accent-dk); }
 
+/* Masthead actions + "What's new" -------------------------------------------- */
+.mast-actions { display: flex; align-items: center; gap: 10px; }
+.ghbtn { font: inherit; cursor: pointer; position: relative; }
+.ghbtn.has-new::after {
+  content: ""; position: absolute; top: -3px; right: -3px;
+  width: 9px; height: 9px; border-radius: 50%; background: #ffd23f;
+  border: 2px solid var(--accent-dk);
+}
+
+/* Changelog modal ----------------------------------------------------------- */
+body.modal-open { overflow: hidden; }
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal[hidden] { display: none; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(20, 32, 43, .5); }
+.modal-box {
+  position: relative; width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column;
+  background: var(--panel); border-radius: var(--radius); box-shadow: 0 12px 40px rgba(20, 32, 43, .3);
+  animation: modal-in .14s ease-out;
+}
+@keyframes modal-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.modal-head h2 { margin: 0; font-size: 18px; }
+.modal-x { border: none; background: none; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; padding: 0 4px; border-radius: 6px; }
+.modal-x:hover { color: var(--ink); background: var(--line); }
+.modal-body { padding: 8px 20px 4px; overflow: auto; }
+.modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--line); }
+
+.cl-list { list-style: none; margin: 0; padding: 0; }
+.cl-entry { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.cl-entry:last-child { border-bottom: none; }
+.cl-meta { display: flex; align-items: center; gap: 10px; }
+.cl-ver { font-weight: 700; color: #fff; background: var(--accent); padding: 2px 9px; border-radius: 999px; font-size: 12.5px; }
+.cl-date { font-size: 12.5px; color: var(--muted); }
+.cl-title { margin: 8px 0 6px; font-size: 15px; }
+.cl-items { margin: 0; padding-left: 18px; color: var(--ink); }
+.cl-items li { margin-bottom: 4px; }
+
 @media (max-width: 720px) {
   .controls, .guide-cols, .cmp-grid { grid-template-columns: 1fr; }
   .masthead .wrap { flex-direction: column; align-items: flex-start; }
